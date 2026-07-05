@@ -3,9 +3,8 @@ __pycache__/
 .hermes/
 node_modules/
 .next/
-data/faiss_index/
 data/*.pdf
-data/*.json
+data/pipeline-output*.json
 .env
 *.egg-info/
 dist/
