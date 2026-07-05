@@ -2,7 +2,7 @@
   "provider": "python",
   "sourceDir": ".",
   "build": {
-    "command": "pip install -r backend/requirements.txt"
+    "command": "bash build.sh"
   },
   "start": {
     "command": "bash start.sh"
