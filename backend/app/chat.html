@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Moose Knowledge Assistant</title>
+<style>
+:root{--forest:#1A3A2A;--gold:#C8A84E;--parchment:#F5F0E8;--leather:#8B7355;--white:#fff;--red:#C62828;--green:#2E7D32;--card:#fff;--border:#e0d8c8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,-apple-system,sans-serif;background:var(--parchment);color:var(--leather);min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--forest);color:var(--parchment);padding:12px 20px;display:flex;align-items:center;gap:12px}
+header h1{font-family:'Playfair Display',Georgia,serif;font-size:1.2rem;font-weight:400}
+#chat{flex:1;overflow-y:auto;padding:16px;max-width:800px;margin:0 auto;width:100%}
+.msg{margin-bottom:16px;animation:fadeIn .3s}
+.msg.user{text-align:right}.msg.user .bubble{background:var(--forest);color:var(--parchment);border-radius:12px 12px 4px 12px}
+.msg.ai .bubble{background:var(--card);border:1px solid var(--border);border-radius:12px 12px 12px 4px}
+.bubble{display:inline-block;max-width:85%;padding:12px 16px;text-align:left;font-size:.95rem;line-height:1.5;white-space:pre-wrap}
+.cite{display:inline-block;background:rgba(200,168,78,.15);border:1px solid var(--gold);border-radius:4px;padding:2px 6px;margin:0 2px;font-size:.8rem;font-family:Georgia,serif;cursor:pointer}
+.confidence{margin-top:8px;font-size:.8rem;padding:4px 8px;border-radius:4px;display:inline-block}
+.conf-HIGH{background:#e8f5e9;color:var(--green)}.conf-MEDIUM{background:#fff8e1;color:#e65100}
+.conf-LOW{background:#fbe9e7;color:var(--red)}.conf-INCONCLUSIVE{background:#f5f5f5;color:#666}
+footer{background:var(--card);border-top:1px solid var(--border);padding:12px 20px}
+#input-area{max-width:800px;margin:0 auto;display:flex;gap:8px}
+#query{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit;resize:none;min-height:44px}
+#query:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,168,78,.2)}
+button{background:var(--forest);color:var(--parchment);border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:.9rem;font-family:inherit}
+button:hover{background:#2D5A3F}button:disabled{opacity:.5}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--parchment);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.empty{text-align:center;padding:60px 20px;color:#999}
+.empty h2{font-family:'Playfair Display',Georgia,serif;color:var(--forest);margin-bottom:16px}
+.empty p{margin-bottom:8px;font-size:.9rem}
+.suggest{display:inline-block;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;margin:4px;font-size:.85rem;cursor:pointer;color:var(--forest)}
+.suggest:hover{border-color:var(--gold);background:rgba(200,168,78,.08)}
+</style>
+</head>
+<body>
+<header><h1>Moose Knowledge Assistant</h1></header>
+<div id="chat"><div class="empty">
+<h2>Ask anything about the Loyal Order of Moose</h2>
+<p>Every answer is backed by official governing documents with exact citations.</p>
+<p style="margin-top:12px">Try:</p>
+<div class="suggest" onclick="ask(this.textContent)">Can a governor fire a bartender?</div>
+<div class="suggest" onclick="ask(this.textContent)">What is the procedure for suspending a member?</div>
+<div class="suggest" onclick="ask(this.textContent)">What voting majority is required to amend the bylaws?</div>
+<div class="suggest" onclick="ask(this.textContent)">Who has authority over bar operations?</div>
+</div></div>
+<footer><div id="input-area">
+<textarea id="query" rows="1" placeholder="Ask anything about the Moose..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ask()}"></textarea>
+<button id="send" onclick="ask()">Ask</button>
+</div></footer>
+<script>
+const chat=document.getElementById('chat'),input=document.getElementById('query'),btn=document.getElementById('send');
+let empty=chat.querySelector('.empty');
+async function ask(text){
+  const q=text||input.value.trim();if(!q)return;input.value='';
+  if(empty){empty.remove();empty=null}
+  chat.insertAdjacentHTML('beforeend','<div class="msg user"><div class="bubble">'+esc(q)+'</div></div>');
+  const ai=document.createElement('div');ai.className='msg ai';
+  ai.innerHTML='<div class="bubble"><span class="spinner"></span> Searching General Laws...</div>';
+  chat.appendChild(ai);chat.scrollTop=chat.scrollHeight;
+  btn.disabled=true;
+  try{
+    const res=await fetch('/api/v1/query',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});
+    const data=await res.json();
+    let html=formatAnswer(data.answer);
+    if(data.citations&&data.citations.length){
+      html+='<div style="margin-top:12px"><strong>Citations:</strong></div>';
+      data.citations.forEach((c,i)=>{
+        html+='<div style="margin-top:6px;font-size:.85rem;color:#666">['+(i+1)+'] '+c.document_title+', '+c.section_number+(c.quoted_text?' - "'+esc(c.quoted_text)+'"':'')+'</div>';
+      });
+    }
+    if(data.confidence){
+      const lvl=data.confidence.level,icon={HIGH:'*5',MEDIUM:'*3',LOW:'*2',INCONCLUSIVE:'*0'}[lvl]||'*3';
+      html+='<div class="confidence conf-'+lvl+'">'+icon+' '+lvl+' ('+data.confidence.score+'%)</div>';
+    }
+    ai.innerHTML='<div class="bubble">'+html+'</div>';
+  }catch(e){ai.innerHTML='<div class="bubble" style="color:var(--red)">Error: '+esc(e.message)+'</div>'}
+  btn.disabled=false;chat.scrollTop=chat.scrollHeight;
+}
+function formatAnswer(text){
+  return esc(text)
+    .replace(/### (CONCISE ANSWER|DETAILED EXPLANATION|CITATIONS|CONFIDENCE)/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+input.focus();
+</script>
+</body>
+</html>

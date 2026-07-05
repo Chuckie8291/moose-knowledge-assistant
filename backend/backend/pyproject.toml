@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moose-knowledge-assistant"
+version = "0.1.0"
+description = "AI-powered knowledge assistant for the Loyal Order of Moose"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+include = ["app*", "workers*"]
+
+[tool.setuptools.package-dir]
+"" = "."

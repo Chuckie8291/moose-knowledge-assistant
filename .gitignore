@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.hermes/
+node_modules/
+.next/
+data/faiss_index/
+data/*.pdf
+data/*.json
+.env
+*.egg-info/
+dist/
+build/
+.DS_Store
+Thumbs.db
