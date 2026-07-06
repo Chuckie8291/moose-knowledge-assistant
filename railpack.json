@@ -1,10 +1,3 @@
 {
-  "provider": "python",
-  "sourceDir": ".",
-  "build": {
-    "command": "bash build.sh"
-  },
-  "start": {
-    "command": "bash start.sh"
-  }
+  "provider": "python"
 }
