@@ -43,6 +43,8 @@ except ImportError:
 
 async def init_db() -> None:
     """Create tables on startup (dev only; use Alembic in production)."""
+    if not _db_available or engine is None:
+        return
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
