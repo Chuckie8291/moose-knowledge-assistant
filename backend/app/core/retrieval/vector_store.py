@@ -251,15 +251,15 @@ class FAISSVectorStore:
 
             results.append(VectorSearchResult(
                 chunk_id=self._id_to_chunk_id.get(idx, str(idx)),
-                content_text=meta["content_text"],
-                section_number=meta["section_number"],
-                section_title=meta["section_title"],
-                hierarchy_path=meta["hierarchy_path"],
-                citation_header=meta["citation_header"],
-                document_short_title=meta["document_short_title"],
+                content_text=meta.get("content_text", ""),
+                section_number=meta.get("section_number", ""),
+                section_title=meta.get("section_title", ""),
+                hierarchy_path=meta.get("hierarchy_path", ""),
+                citation_header=meta.get("citation_header", ""),
+                document_short_title=meta.get("document_short_title", meta.get("document_title", "")),
                 document_tier=meta.get("document_tier", 1),
-                page_start=meta["page_start"],
-                page_end=meta["page_end"],
+                page_start=meta.get("page_start", 0),
+                page_end=meta.get("page_end", 0),
                 effective_date=meta.get("effective_date", ""),
                 score=float(dist),  # Cosine similarity (higher = better)
                 metadata=meta.get("metadata", {}),
