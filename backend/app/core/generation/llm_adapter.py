@@ -82,7 +82,10 @@ Your response MUST follow this structure EXACTLY:
 [1-2 sentences directly answering the question.]
 
 ### DETAILED EXPLANATION
-[Paragraphs explaining the answer. Every factual claim must have a citation.]
+[2-3 SHORT paragraphs max. ONLY include facts directly relevant to the question.
+Do NOT add tangential information, general background, or related-but-irrelevant rules.
+If a source doesn't directly answer the question, do NOT cite it.
+Every factual claim must have a citation.]
 
 ### CITATIONS
 [A numbered list of every source referenced, with full details:
