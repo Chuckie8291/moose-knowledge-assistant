@@ -4,6 +4,7 @@ __pycache__/
 node_modules/
 .next/
 data/*.pdf
+data/pdfs/
 data/pipeline-output*.json
 .env
 *.egg-info/
